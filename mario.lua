@@ -20,11 +20,25 @@ function edit_coins (left, right)
     memory.writebyte(0x07EE, right);
 end;
 
-function edit_score (time)
-    address = 0x07E3;
+function edit_score_display (time)
+    address = 0x07D8;
     numstr = "";
     time = time - 200;
-    while (address >= 0x07DD) do
+    while (address <= 0x07DC) do
+        gui.text(50, 200, time);
+    	if time > 1 then
+            memory.writebyte(address, time % 10);
+            time = time / 10;
+        else
+            memory.writebyte(address, 0);
+        end;
+        address = address + 1;
+    end;
+end;
+
+function edit_score (time)
+    address = 0x07E2;
+    while (address >= 0x07DE) do
     	if time > 1 then
             memory.writebyte(address, time % 10);
             time = time / 10;
@@ -66,11 +80,22 @@ while (true) do
     input_content = read_file("input.txt");
     if(input_content ~= nil) then
         fact = input_content
+        gui.text(0, 50, fact);
     end;
 
-    edit_score(tonumber(read_file("time.txt")));
+    time = tonumber(read_file("time.txt"))
+    if(time == 0) then
+    	kill_mario();
+        gui.text(0, 50, "Your Postmates delivery should be here by now!");
+        gui.text(0, 100, "Stop playing Mario!");
+    end;
+    if (time) then
+        edit_score(time);
+        --edit_score_display(time);
+    end;
+    edit_coins(memory.readbyte(0x07E1), memory.readbyte(0x07E2));
+    --gui.text(0, 20, read_file("seconds.txt"));
 
     old_button = button;
-    gui.text(0, 50, memory.readbyte(0x07DF));
     emu.frameadvance();
 end;
